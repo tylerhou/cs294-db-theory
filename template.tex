@@ -1,0 +1,96 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[headings]{fullpage}
+\usepackage{algorithm2e, amsfonts, amsmath, amssymb, enumitem, fancyhdr, hyperref, mathtools, minted, MnSymbol, stmaryrd, tikz, xfrac}
+\usetikzlibrary{positioning}
+\graphicspath{ {.} }
+
+\usepackage[letterpaper,
+            left=2cm,
+            right=2cm,
+            top=3cm,
+            bottom=2cm]{geometry}
+
+\def\Name{Tyler Hou}
+\def\StudentID{3033060357}
+\def\Class{CS XXX}
+\def\Semester{Fa,Sp,Su 20XX}
+\def\HomeworkNumber{XX}
+\def\DocumentTitle{\Class{}, \Semester{} -- HW \HomeworkNumber{}}
+
+\newcommand{\Continued}{
+    \begin{flushright}
+    $\xrightarrow{\text{Continued on next page}}$
+    \end{flushright}
+    \newpage{}
+}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\linvec{\langle}{\rangle}
+
+\def\Algorithm{\medbreak\textit{Algorithm}}
+\def\Proof{\medbreak\textit{Proof of correctness}}
+\def\Runtime{\medbreak\textit{Runtime analysis}}
+
+\newcommand{\BigO}{\mathcal{O}}
+\newcommand{\qed}{\hfill$\square$}
+
+\title{\vspace{-2cm}\DocumentTitle{}}
+\author{\Name{} (SID \StudentID{})}
+\date{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\DocumentTitle{} -- \Name{} (\StudentID{})}
+\rhead{\thepage}
+
+\begin{document}
+
+\maketitle
+
+\section{Numbering}
+
+\subsection{a, b, c}
+\begin{enumerate}[label = {\alph*)}]
+    \item First.
+    \item Second.
+    \item Third.
+\end{enumerate}
+
+\subsection{1, 2, 3}
+\begin{enumerate}[label = {\arabic*)}]
+    \item First.
+    \item Second.
+    \item Third.
+\end{enumerate}
+
+\subsection{i, ii, iii}
+\begin{enumerate}[label = {\roman*)}]
+    \item First.
+    \item Second.
+    \item Third.
+\end{enumerate}
+
+\newpage
+\section{Code}
+
+\begin{minted}[mathescape,
+               linenos,
+               numbersep=5pt,
+               gobble=2,
+               frame=lines,
+               framesep=2mm]{python}
+    def relabel(root):
+        relabel_explore(root, [])
+
+    def relabel_explore(node, parents):
+        parents.append(node)
+        for child in node.children:
+            relabel_explore(child, parents)
+        idx = max(len(parents) - 1 - node.label, 0)
+        node.label = parents[idx].label
+        parents.pop()
+\end{minted}
+
+\end{document}
