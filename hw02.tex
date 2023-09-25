@@ -1,0 +1,206 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[headings]{fullpage}
+\usepackage{algorithm2e, amsfonts, amsmath, amssymb, enumitem, fancyhdr, hyperref, mathtools, minted, MnSymbol, stmaryrd, tikz, xfrac}
+\usetikzlibrary{positioning}
+\graphicspath{ {.} }
+
+\usepackage[letterpaper,
+            left=2cm,
+            right=2cm,
+            top=3cm,
+            bottom=2cm]{geometry}
+
+\def\Name{Tyler Hou}
+\def\StudentID{3033060357}
+\def\Class{CS 294}
+\def\Semester{Fa 2023}
+\def\HomeworkNumber{2}
+\def\DocumentTitle{\Class{}, \Semester{} -- HW \HomeworkNumber{}}
+
+\newcommand{\Continued}{
+    \begin{flushright}
+    $\xrightarrow{\text{Continued on next page}}$
+    \end{flushright}
+    \newpage{}
+}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\linvec{\langle}{\rangle}
+
+\def\Algorithm{\medbreak\textit{Algorithm}}
+\def\Proof{\medbreak\textit{Proof of correctness}}
+\def\Runtime{\medbreak\textit{Runtime analysis}}
+
+\newcommand{\BigO}{\mathcal{O}}
+\newcommand{\qed}{\hfill$\square$}
+
+\title{\vspace{-2cm}\DocumentTitle{}}
+\author{\Name{} (SID \StudentID{})}
+\date{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\DocumentTitle{} -- \Name{} (\StudentID{})}
+\rhead{\thepage}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Collaborators}:
+Chris Douglas,
+Vivian Fang,
+Altaan Han,
+Shadaj Laddad,
+Gabriel Matute,
+Jiwon Park, \newline
+Conor Power,
+Ricardo Sandoval
+
+\newcommand{\AND}{\wedge}
+\newcommand{\OR}{\vee}
+\newcommand{\Vars}{\text{Vars}}
+
+\section{Problem 1}
+
+I'm completely lost on this problem. I tried writing a counterexample checker,
+which enumerates over all possible schemas, tries randomly generated (boolean)
+tables, and compares the result of $(A \bowtie B) \ltimes Q$ and $(A \ltimes Q)
+\bowtie (B \ltimes Q)$.
+\url{https://gist.github.com/tylerhou/f308121e88817b46562149c7501ef164}.
+
+The checker cannot find counterexamples when $A$ and $B$ don't separately share
+variables with $Q$; i.e. the above equality holds if
+
+$$\Vars(A) \cap \Vars(Q) = \Vars(B) \cap \Vars(Q)$$.
+
+But this feels too strong: since $Q$ contains all variables, this implies that
+$\Vars(A) = \Vars(B)$.
+
+The simplest such counterexample when the above does not hold is the database
+$A(aq) = \{(0,) (1,)\}$, $B(bq) = \{(0,), (1,)\}$, and $Q(aq, bq) = \{(0, 1),
+(1, 0), (1, 1)\}$. Then:
+
+\begin{align*}
+    (A \bowtie B) \ltimes Q &= \{(0, 0), (0, 1), (1, 0), (1, 1)\} \ltimes Q           \\
+                            &= \{(0, 1), (1, 0), (1, 1)\} = Q                         \\
+                            &\neq \{(0, 0), (0, 1) (1, 0), (1, 1)\}                   \\
+                            &= \{(0,), (1,)\}_{(aq,)} \bowtie \{(0,), (1,)\}_{(bq,)}  \\
+                            &= (A \ltimes Q) \bowtie (B \ltimes Q)                    \\
+\end{align*}
+
+\section{Problem 2}
+
+\subsection{Part A}
+
+\begin{enumerate}[label = {\arabic*)}]
+    \item $Q_1$ Cyclic. Triangle join shown in lecture.
+    \item $Q_2$ Acyclic.
+
+        \begin{align*}
+            Q_2 &= R(X, Y, Z) \AND S(Y, Z, U) \AND T(Z, U, V) \\
+                &= R(Y, Z) \AND S(Y, Z, U) \AND (T(Z, U) \tag{Remove isolated variables $X$ and $V$} \\
+                &= S(Y, Z, U) \tag{Remove ears $R(Y, Z)$ and $T(Z, U)$} \\
+                &= - \tag{Remove isolated $Y, Z, U$}
+        \end{align*}
+
+    \item $Q_3$ Acyclic.
+
+        \begin{align*}
+            Q_3 &= A(X, Y, Z) \AND R(X, Y) \AND S(Y, Z) \AND T(Z, X) \\
+                &= A(X, Y, Z) \tag{Remove ears ($R, S, T$ contained in $A$)} \\
+                &= - \tag{Remove isolated}
+        \end{align*}
+
+    \item $Q_4$ There are no isolated variables; we can only remove ears $A, B,
+        C$. But this gives us $Q_1$, which is cyclic.
+\end{enumerate}
+
+\subsection{Part B}
+
+\begin{enumerate}
+    \item 3. Number a cycle's vertices $1 \to 2 \to 3 \to \ldots \to n \to 1$.
+        Then $(0, 1, n) \to (1, 2, n) \to (2, 3, n) \to \ldots \to (n-2, n-1,
+        n)$ is a tree decomposition with tree width $3$.
+    \item Julia claims that it has tree width $n$. I have no idea how to prove.
+    \item I have no idea.
+\end{enumerate}
+
+\section{Problem 3}
+
+\subsection{Part A}
+
+We have:
+
+\begin{align*}
+    Q_1 &\subseteq Q_4      \tag{$h = (x, y) \to (x, y)$} \\
+    \\
+    Q_2 &\subseteq Q_1      \tag{$h = (x, y, z, u) \to (z, u, z, u)$} \\
+    Q_2 &\subseteq Q_4      \tag{$h = (x, y, z, u) \to (x, y, x, x)$} \\
+    \\
+    Q_3 &\subseteq Q_1      \tag{$h = (x, y, z, u) \to (x, y, x, y)$} \\
+    Q_3 &\subseteq Q_2      \tag{$h = (x, y, z, u) \to (x, y, z, x)$} \\
+    Q_3 &\subseteq Q_4      \tag{$h = (x, y, z, u) \to (x, y, x, x)$} \\
+    \\
+    Q_4 &\subseteq Q_1      \tag{$h = (x, y, z, u) \to (x, y, x, y)$} \\
+\end{align*}
+
+Note that $Q_1 \equiv Q_4$.
+
+Homomorphisms found via brute force. \url{https://gist.github.com/tylerhou/7a67cee962214de408a9ec88334f25ce}
+
+\subsection{Part B}
+
+\begin{enumerate}
+    \item $Q_1 \equiv Q_2$. $Q_1$ is a query that evaluates to true on a
+        directed triangle. $Q_2$ is a query that evaluates to true on a
+        directed triangle with some vertex $x \geq y$, where $x$ has an edge to
+        $y$. It is clear that $Q_2 \subseteq Q_1$.
+
+        To show the other direction, consider any directed triangle on three
+        vertices. Let $x$ be a maximal vertex, and consider its outgoing edge
+        to $y$. Either $x = y$ or $x > y$ by assumption of maximality.
+
+    \item $Q_3 \subseteq Q_1$. This is clear.
+
+    \item $Q_1 \not\subseteq Q_3$, and $Q_2 \not\subseteq Q_3$. $Q_3$ is true
+        for all directed triangles that have a path with increasing vertex
+        values. The triangle $0 \to 2 \to 1 \to 0$ is a counter example for
+        both cases: it only has three paths, and none are increasing. However,
+        it is a directed triangle, and there is one increasing edge ($0 \to
+        2$).
+
+    \item $Q_3 \subseteq Q_2$. If a triangle has an increasing path, it also
+        has an increasing edge.
+\end{enumerate}
+
+\subsection{Part C}
+
+$Q_1 \subseteq Q_2$. Suppose that a graph has a (possibly non-simple) cycle of
+length $5$ such that the first and second vertices are not equal. We show that
+it must also have a cycle of length $5$ where the first and third vertices are
+not equal.
+
+Let $a \to b \to c \to d \to e \to a$ be the cycle of length $5$ where $a \neq
+b$. There are two cases. If $a \neq c$, then we are done. Otherwise, $a = c$.
+Then, the graph has a cycle of length $3$: $(c =)\;a \to d \to e \to a$. Again,
+there are two cases. If $a \neq e$, we have the cycle $a \to d \to e \to a \to
+b \to c\;(= a)$ with the desired property. Otherwise, $a = e$ which implies
+$R(a, a)$: there is a self edge from $a$ to itself. Hence, the path $a \to a
+\to b \to a \to a \to a$ is a cycle of length $5$ with the desired property.
+
+\bigskip
+The other direction: $Q_2 \subseteq Q_1$. Suppose a graph has a (again possibly
+non-simple) cycle of length $5$ such that the first and third vertices are not
+equal.
+
+Again, call such a cycle $a \to b \to c \to d \to e \to a$ such that $a \neq
+c$. There are two cases; if $a \neq b$, we are done. Otherwise, $a = b$, so
+again $a$ has a self loop, and $a$ has an edge to $c$. We can create a cycle $a
+\to c \to d \to e \to a \to a$ of length $5$ where the first and second
+vertices are different.
+
+
+\end{document}

@@ -1,0 +1,326 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[headings]{fullpage}
+\usepackage{algorithm2e, amsfonts, amsmath, amssymb, enumitem, fancyhdr, hyperref, mathtools, minted, MnSymbol, stmaryrd, tikz, xfrac}
+\usetikzlibrary{positioning}
+\graphicspath{ {.} }
+
+\usepackage[letterpaper,
+            left=2cm,
+            right=2cm,
+            top=3cm,
+            bottom=2cm]{geometry}
+
+\def\Name{Tyler Hou}
+\def\StudentID{3033060357}
+\def\Class{CS 294}
+\def\Semester{Fa 2023}
+\def\HomeworkNumber{1}
+\def\DocumentTitle{\Class{}, \Semester{} -- HW \HomeworkNumber{}}
+
+\newcommand{\Continued}{
+    \begin{flushright}
+    $\xrightarrow{\text{Continued on next page}}$
+    \end{flushright}
+    \newpage{}
+}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\linvec{\langle}{\rangle}
+
+\def\Algorithm{\medbreak\textit{Algorithm}}
+\def\Proof{\medbreak\textit{Proof of correctness}}
+\def\Runtime{\medbreak\textit{Runtime analysis}}
+
+\newcommand{\BigO}{\mathcal{O}}
+\newcommand{\qed}{\hfill$\square$}
+
+\title{\vspace{-2cm}\DocumentTitle{}}
+\author{\Name{} (SID \StudentID{})}
+\date{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\DocumentTitle{} -- \Name{} (\StudentID{})}
+\rhead{\thepage}
+
+\begin{document}
+
+\maketitle
+
+\noindent\textbf{Collaborators}:
+Chris Douglas,
+Vivian Fang,
+Altaan Han,
+Shadaj Laddad,
+Gabriel Matute,
+Jiwon Park, \newline
+Conor Power,
+Ricardo Sandoval
+
+\section{Problem 1}
+
+\begin{enumerate}[label = {\alph*)}]
+    \item See attached scan.
+    \item See attached scan.
+\end{enumerate}
+
+\subsection{Part C}
+
+(I don't know if this is correct, but this is what I came up with after about
+15 hours of work that isn't just a ``trivial'' application of EF games. I can't
+find anything obviously wrong with it, but it probably has a flaw...)
+
+\bigskip
+
+We claim (Claim 1) that every sentence $\phi$ in such a language can be written
+in the form:
+
+\newcommand{\AND}{\wedge}
+\newcommand{\OR}{\vee}
+
+\begin{align*}
+    \phi &= \psi_1 \OR \psi_2 \OR \psi_3 \ldots \\
+    \psi_n &= \exists x_n^1 \exists x_n^2 \ldots \exists x_n^{k_n} (\chi_n^1 \AND \chi_n^2 \AND \ldots \chi_n^t) \\
+    \chi_n^t &= (x_n^i = x_n^j) \; | \; (x_n^1 \neq x_n^j) \; \text{for some $1 \leq i, j \leq k_n$. $|$ is in the meta language.} \\
+\end{align*}
+
+In such a form, we can interpret each $\psi_n$ term as a (possibly
+unsatisfiable) claim on the size of the domain. To do this, draw a graph where vertices are variables and edges of type A are
+equalities between variables and edges of type B are inequalities between
+variables.
+
+Next, consider all simple cycles of the graph. If there is a simple cycle where
+all edges are of type A (equalities) except one edge is of type B
+(inequalities), the $\psi_n$ is not satisfiable. (One example of such an
+unsatisfiable sentence s $(a = b) \AND (b = c) \AND (c \neq a)$. A simple cycle
+is $a = b = c \neq a$, and there is exactly one inequality in that cycle.)
+
+Otherwise, consider the longest simple cycle using edges of just type B
+(inequalities); let the number of vertices in that cycle be $d$. Then $\psi_n$
+claims that the domain must have size at least $d$.
+
+Then $\phi$ is the union of all sentences. If the union is non-empty (at least
+one $\psi_i$ is satisfiable) then $\phi$ is satisfiable by any domain $D$ of
+size $d_i$ for all satisfiable $\psi_i$. Otherwise, $\phi$ is not satisfiable.
+
+\bigskip
+
+\subsection{Proof of Claim 1}
+
+\smallskip
+
+Let $\phi$ be a sentence using symbols $\neg, \forall, \exists, \AND, \OR, =,$
+and $\neq$. We rewrite $\phi$ to be in the above form via the following steps:
+
+\begin{enumerate}[label = {\arabic*)}, itemsep=0mm]
+    \item We push down $\neg$ into the ``leaves'' of $\phi$, eventually
+        replacing $\neg(a = b)$ with $a \neq b$.
+    \item We remove $\forall$'s by replacing $\forall x_1 \forall x_2 \ldots
+        \alpha$ and $\exists x \forall y \alpha$ from outside in with
+        equivalent expressions that do not use $\forall$.
+    \item We normalize the resulting expression (that only uses $\exists, \AND,
+        \OR, \neq,$ and  $=$) into the above desired form.
+\end{enumerate}
+
+\subsubsection{Step 1: Push down $\neg$}
+
+The following rewrite rules suffice to push down $\neg$. A full proof would
+induct over the distance from the topmost $\neg$ in the expression tree to its
+leaves.
+
+\begin{enumerate}[label = {\alph*)}, itemsep=0mm]
+    \item $\neg \forall x \alpha \equiv \exists x \neg \alpha$
+    \item $\neg \exists x \alpha \equiv \forall x \neg \alpha$
+    \item $\neg (\alpha \AND \beta) \equiv \neg \alpha \OR \neg \beta$ (De Morgan's)
+    \item $\neg (\alpha \OR \beta) \equiv \neg \alpha \AND \neg \beta$ (De Morgan's)
+    \item $\neg (a = b) \equiv a \neq b$
+    \item $\neg (a \neq b) \equiv a = b$
+\end{enumerate}
+
+Note for the inductive steps a-d, $\neg$ is pushed down by one level on every
+application of the rewrite. Once $\neg$ surrounds an equality (or inequality),
+we can remove it entirely by applying rule e (or f).
+
+\subsubsection{Step 2: Replace $\forall$ with $\exists$}
+
+After Step 1, our expression only contains $\forall, \exists, \AND, \OR, =,$
+and $\neq$.
+
+Note that if the domain only has one element, all quantifers trivially reduce
+to quantifying over that single element. Hence, to check whether a query is
+satisfiable by any domain with one element, we can replace all variables with a
+single constant, remove all quantifiers, and see if the resulting formula (with
+no variables) evaluates to $\top$ (true). If it does, because our new sentence
+did not rely on any property of the element, we know that {\em all} domains
+with size one satisfy the sentence. On the other hand, if the new sentence
+evaluates to $\bot$ (false), then we know that {\em no} domain with size one
+can satisfy the sentence.
+
+Therefore, for the rest of the proof, we assume that we are checking whether
+the sentence $\phi$ is satisfiable by some domain with at least two elements.
+Under that assumpion, we claim that the following three rewrite rules hold.
+
+\bigskip
+\textbf{1. }{\boldmath $\forall x \forall y \; \theta \equiv (\exists x \; \theta[y/x]) \AND (\exists x \exists y \; (x \neq y) \AND \theta)$ }
+\smallskip
+
+$\theta[y/x]$ denotes the expression $\theta$ where all instances of $y$ have
+been replaced with $x$.
+
+\textit{Justification.} Assuming that the domain has at least two elements,
+there are two cases for $x$ and $y$ when we range over both. Either they are
+equal, or they are not. The first term on the right hand side handles the equal
+case, and the second term handles the not equals case.
+
+
+\bigskip
+\textbf{2. }{\boldmath $\exists x \forall y \; \theta \equiv (\exists x \; \theta[y/x]) \AND (\exists x \exists y \; (x \neq y \AND \theta))$}
+\smallskip
+
+\textit{Justification.} For a similar reason as above. Once we fix a particular
+$x$, there are two possibilities for $y$. Either it is equal to $x$, which is
+handled by the first term of the left hand side. Otheriwse, it is not equal to
+$x$, so it is handled by the right hand side.
+
+
+\bigskip
+\textbf{3. }{\boldmath $\forall x \exists y \; \theta \equiv (\exists x \; \theta[y/x]) \OR (\exists x \exists y \; (x \neq y \AND \theta))$}
+\smallskip
+
+Note that we have a disjunction instead of a conjunction on the right hand
+side.
+
+\textit{Justification.} Suppose we fix a particular $x$. Now we must choose
+some $y$ to satisfy $\theta$. There are two cases: either we choose a $y$ that
+is equal to $x$ (first term), or we choose a $y$ that is not equal to $x$
+(second term). Because only one needs to be satisifed, the terms are joined
+with an $\OR$.
+
+By similar reasoning, we can also rewrite expressions like $\forall x ((\forall
+y \; \theta) \OR (\exists z \; \rho))$. For a particular $x$ and $y$, there are
+two cases (equals and not equals), and similarly for $x$ and $z$. Hence, we
+have
+
+
+$$
+\forall x ((\forall y \; \theta) \OR (\exists z \; \rho)) \equiv \exists x \; [(\theta[y/x] \AND (\exists y \; (x \neq y \AND \theta))) \OR (\theta[z/x] \OR \exists z \; (x \neq z \AND \rho)]
+$$
+
+There are five more cases of this variety. All six are:
+
+\begin{enumerate}[label = {\roman*)}, itemsep=0mm]
+    \item $\forall x ((\forall y \; \theta) \OR (\forall z \; \rho))$
+    \item $\forall x ((\forall y \; \theta) \OR (\exists z \; \rho))$
+    \item $\forall x ((\exists y \; \theta) \OR (\exists z \; \rho))$
+    \item $\exists x ((\forall y \; \theta) \AND (\forall z \; \rho))$
+    \item $\exists x ((\forall y \; \theta) \AND (\exists z \; \rho))$
+    \item $\exists x ((\exists y \; \theta) \AND (\exists z \; \rho))$
+\end{enumerate}
+
+\bigskip
+
+We leave the other five equivalences as an exercise to the grader (although we
+note that their equivalences are the results of mechanically applying rewrites
+1, 2, and 3 from above).
+
+
+Finally, for cases where we have expressions of the form $\forall x \; (\theta
+\AND \rho)$ and $\exists y \; (\theta \OR \rho)$ we can simply distribute:
+
+\begin{enumerate}[label = {-}, itemsep=0mm]
+  \item $\forall x \; (\theta \AND \rho) \equiv (\forall x \; \theta) \AND (\forall x \; \rho)$
+  \item $\exists x \; (\theta \OR \rho) \equiv (\exists x \; \theta) \OR (\exists x \; \rho)$
+\end{enumerate}
+
+\subsubsection{Step 3}
+
+At this point, our expression only contains $\exists, \AND, \OR, =,$ and
+$\neq$.
+
+We apply the following two rewrite rules repeatedly to push down $\AND$'s and
+lift up $\OR$'s. The first is a repeat of the $\exists$ distributive rule
+above.
+
+\begin{enumerate}[label = {\alph*)}]
+    \item Lift Up $\OR$: $\exists x \; (\theta \OR \rho) \equiv (\exists x \; \theta) \OR (\exists x \; \rho)$
+    \item Push Down $\AND$: $\exists x \; [(\theta \OR \rho) \AND \sigma] \equiv \exists x \; [(\theta \AND \sigma) \OR (\rho \AND \sigma)]
+        \\ \hspace*{47mm} \equiv (\exists x \; (\theta \AND \sigma)) \OR (\exists x \; (\theta \AND \sigma))$
+\end{enumerate}
+
+Finally, we note that all rewrites above increase the size of $\phi$ by a most
+a constant multiple, and each rewrite removes at least one unwanted term.
+Hence, the final query is finite in size, and can be interpreted as described
+in 1.1 in finite time.
+
+It is clear that in this case that even if the structure is infinite, we can
+still convert $\phi$ into the desired form in finite time, so we can decide
+$\texttt{SAT}(\phi)$ for infinite structures in finite time. \qed
+
+\subsection{Part D}
+
+We repeat the above, except for Step 1, we push down $\neg$ to until it
+modifies a relation (i.e. $\neg P(x)$ is allowed). The remaining rewrite rules
+apply normally, the only difference is instead of having no $\neg$ symbol, we
+allow $\neg$ to modify relations.
+
+The final rewritten $\phi$ has the same definition as 1.1, except we also allow
+relations and their negations to appear in $\chi_n^t$ (changes in
+\textbf{bold}):
+
+\begin{align*}
+    \phi &= \psi_1 \OR \psi_2 \OR \psi_3 \ldots \\
+    \psi_n &= \exists x_n^1 \exists x_n^2 \ldots \exists x_n^{k_n} (\chi_n^1 \AND \chi_n^2 \AND \ldots \chi_n^t) \\
+    \chi_n^t &= (x_n^i = x_n^j) \; | \; (x_n^1 \neq x_n^j) \mathbf{\; | \; P_t(x_n^i) \; | \; \neg P_t(x_n^i)}
+\end{align*}
+
+Finite satisfiability for each $\psi_n$ (and thus for $\phi$) is decidable.
+First, we use 1.1 to see whether the constraints on the domain's size can be
+satisifed. If the constraints cannot be satisfied, we conclude that $\psi_n$ is
+not satisfiable.
+
+Otherwise, let the \textit{group} of an element $d \in D$ be the tuple $G(d) =
+(A_1(d), A_2(d), \ldots, A_t(d))$ for $1 \leq t \leq T$ ($T$ is the number of
+unary relations) where $A_i = 1$ if $d \in P_x$; else $A_i = 0$. Partition
+elements of $D$ into their groups. Note that for the purpose of satisfying
+$\psi_n$, elements in each group are symmetric.
+
+Hence, we can brute force search, assigning $x_1$ to some element of each group
+in order. For a fixed $x_1$, we assign $x_2$ to some element of the remaining
+groups; then we assign $x_3$. In other words, we try all possible assignments
+of $x_i$ to groups. If some assignment satisfies $\psi_n$, then we conclude
+that it is satisfiable, otherwise, we conclude that it is not. This can clearly
+be done in finite time (it is bounded by $\BigO(k_n^{k_n})$).
+
+Finally, we conclude $\phi$ is satisfiable if any only if some $\psi_i$ is
+satisfiable.
+
+\subsubsection{General Satisfiability}
+
+Then, suppose that $\phi$ is generally satisfiable; we show that it is finitely
+satisfiable. If $\phi$ is satisfiable, then its rewritten version is also
+satisfiable, so some $\psi_n$ is satisfiable.
+
+Thus, we can enumerate elements $d \in D$ (where $D$ is possibly infinite in
+size), sorting elements into their groups. After we process each element $d$,
+we attempt to satisfy all $\psi_i$ using the above procedure. If we
+successfully satisfy some $\psi_i$, we conclude $\phi$ is satisfiable;
+otherwise, we continue.
+
+(This feels like recursively enumerable, and not general satisfiability...? If
+I had some magic procedure to partition $D$ into groups (of possibly infinite
+size), that would make this much easier.)
+
+\subsubsection{Trakhtenbrot’s theorem}
+
+This does not contradict Trakhtenbrot’s theorem because Trakhtenbrot’s theorem
+requires at least one binary relation. We only have unary relations in this
+structure.
+
+\section{Problem 2}
+
+See attached scan.
+
+
+\end{document}
